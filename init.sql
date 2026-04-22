@@ -109,7 +109,8 @@ CREATE TABLE sagas (
     descripcion  TEXT,
     anio_inicio  INT,
     fk_genero    VARCHAR(10)  REFERENCES generos_contenido(id),
-    fk_categoria VARCHAR(10)  REFERENCES categorias(id)
+    fk_categoria VARCHAR(10)  REFERENCES categorias(id),
+    fk_artista   VARCHAR(20)  REFERENCES artistas(id)
 );
 
 CREATE TABLE contenidos (
@@ -236,6 +237,6 @@ CREATE TABLE preferencias (
     fecha_agregado DATE,
     fk_cliente     VARCHAR(20) NOT NULL REFERENCES clientes(id),
     fk_contenido   VARCHAR(20) NOT NULL REFERENCES contenidos(id),
-    UNIQUE (fk_cliente, fk_cliente)
+    UNIQUE (fk_cliente, fk_contenido)
     -- evita duplicados: un cliente no puede tener el mismo favorito dos veces
 );

@@ -1,188 +1,498 @@
 -- =========================
--- PAISES
+-- CATALOGOS
 -- =========================
-INSERT INTO paises VALUES
+INSERT INTO paises (id, nombre, codigo_iso) VALUES
 ('cr', 'Costa Rica', 'CRI'),
 ('us', 'Estados Unidos', 'USA'),
-('mx', 'México', 'MEX'),
-('es', 'España', 'ESP');
+('mx', 'Mexico', 'MEX'),
+('es', 'Espana', 'ESP'),
+('ar', 'Argentina', 'ARG'),
+('br', 'Brasil', 'BRA');
 
--- =========================
--- ESTILOS
--- =========================
-INSERT INTO estilos VALUES
-('est1', 'Rock', 'musica'),
-('est2', 'Pop', 'musica'),
-('est3', 'Drama', 'actuacion'),
-('est4', 'Accion', 'actuacion');
+INSERT INTO estilos (id, nombre, tipo) VALUES
+('st1', 'Rock', 'musica'),
+('st2', 'Pop', 'musica'),
+('st3', 'Jazz', 'musica'),
+('st4', 'Drama', 'actuacion'),
+('st5', 'Accion', 'actuacion'),
+('st6', 'Electronica', 'musica');
 
--- =========================
--- GENEROS CONTENIDO
--- =========================
-INSERT INTO generos_contenido VALUES
-('gen1', 'Accion', 'pelicula'),
-('gen2', 'Drama', 'serie'),
-('gen3', 'Pop', 'musica'),
-('gen4', 'General', 'general');
+INSERT INTO generos_contenido (id, nombre, tipo) VALUES
+('g1', 'Accion', 'pelicula'),
+('g2', 'Drama', 'serie'),
+('g3', 'Musica', 'musica'),
+('g4', 'Comedia', 'pelicula'),
+('g5', 'General', 'general');
 
--- =========================
--- CATEGORIAS
--- =========================
-INSERT INTO categorias VALUES
+INSERT INTO categorias (id, nombre) VALUES
 ('cat1', 'Accion'),
 ('cat2', 'Drama'),
 ('cat3', 'Comedia'),
-('cat4', 'Documental');
+('cat4', 'Documental'),
+('cat5', 'Musical');
 
--- =========================
--- FORMATOS
--- =========================
-INSERT INTO formatos VALUES
+INSERT INTO formatos (id, nombre, dispositivo) VALUES
 ('f1', 'mp4', 'movil'),
 ('f2', 'hd', 'smart_tv'),
 ('f3', 'tvz', 'pc');
 
 -- =========================
--- PERSONAS
+-- PERSONAS / CLIENTES
 -- =========================
-INSERT INTO personas VALUES
-('p1', 'Juan', 'Perez', true, '1990-05-10', '88888888', 'juan@test.com', 'cr'),
-('p2', 'Maria', 'Lopez', false, '1985-08-20', '87777777', 'maria@test.com', 'mx'),
-('p3', 'Carlos', 'Smith', true, '1992-01-15', '86666666', 'carlos@test.com', 'us');
+INSERT INTO personas (id, nombre, apellido, genero, fecha_nacimiento, telefono, email, fk_pais)
+SELECT
+    'p' || lpad(gs::text, 2, '0'),
+    'Cliente' || lpad(gs::text, 2, '0'),
+    'Apellido' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'M'
+        WHEN 1 THEN 'F'
+        ELSE 'O'
+    END,
+    DATE '1980-01-01' + ((gs - 1) * 173),
+    '8888' || lpad(gs::text, 4, '0'),
+    'cliente' || lpad(gs::text, 2, '0') || '@tvz.net',
+    CASE (gs - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END
+FROM generate_series(1, 20) AS gs;
 
--- =========================
--- CLIENTES
--- =========================
-INSERT INTO clientes VALUES
-('c1', 'pass123', 'San Jose', 'Ingeniero', '2024-01-01', 'p1'),
-('c2', 'pass456', 'CDMX', 'Diseñadora', '2024-02-01', 'p2');
+INSERT INTO clientes (id, clave_acceso, direccion, profesion, fecha_inclusion, fk_persona)
+SELECT
+    'c' || lpad(gs::text, 2, '0'),
+    'pass' || lpad(gs::text, 3, '0'),
+    'Direccion ' || gs,
+    CASE (gs - 1) % 4
+        WHEN 0 THEN 'Ingeniero'
+        WHEN 1 THEN 'Docente'
+        WHEN 2 THEN 'Disenador'
+        ELSE 'Estudiante'
+    END,
+    DATE '2024-01-01' + ((gs - 1) * 7),
+    'p' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
 
--- =========================
--- TIPOS PAGO
--- =========================
-INSERT INTO tipos_pago VALUES
-('tp1', 'Tarjeta Crédito'),
-('tp2', 'Bitcoin');
+INSERT INTO tipos_pago (id, nombre) VALUES
+('tp1', 'Tarjeta Credito'),
+('tp2', 'Tarjeta Debito'),
+('tp3', 'Bitcoin');
 
--- =========================
--- FORMAS DE PAGO
--- =========================
-INSERT INTO formas_de_pago VALUES
-('fp1', '12345678', 'Juan Perez', '2027-12-01', NULL, 'tp1', 'c1'),
-('fp2', NULL, 'Maria Lopez', NULL, 'wallet123', 'tp2', 'c2');
+INSERT INTO formas_de_pago (id, numero_cuenta, titular, fecha_vencimiento, direccion_wallet, fk_tipo_pago, fk_cliente)
+SELECT
+    'fp' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 3
+        WHEN 2 THEN NULL
+        ELSE 'ACC' || lpad(gs::text, 8, '0')
+    END,
+    'Cliente' || lpad(gs::text, 2, '0') || ' Apellido' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 3
+        WHEN 2 THEN NULL
+        ELSE DATE '2027-12-31' - ((gs - 1) * 14)
+    END,
+    CASE (gs - 1) % 3
+        WHEN 2 THEN 'wallet' || lpad(gs::text, 2, '0') || 'tvz'
+        ELSE NULL
+    END,
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'tp1'
+        WHEN 1 THEN 'tp2'
+        ELSE 'tp3'
+    END,
+    'c' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
 
--- =========================
--- MEMBRESIAS
--- =========================
-INSERT INTO membresias VALUES
-('m1', '2024-01-01', '2024-12-31', 120.00, 'activa', 'c1', 'fp1'),
-('m2', '2024-02-01', '2024-08-01', 80.00, 'vencida', 'c2', 'fp2');
-
--- =========================
--- CATEGORIA ARTISTA
--- =========================
-INSERT INTO categoria_artista VALUES
-('ca1', 'Actor'),
-('ca2', 'Director'),
-('ca3', 'Musico');
+INSERT INTO membresias (id, fecha_inicio, fecha_fin, monto_pagado, estado, fk_cliente, fk_forma_pago)
+SELECT
+    'm' || lpad(gs::text, 2, '0'),
+    DATE '2024-01-01' + ((gs - 1) * 30),
+    DATE '2025-01-01' + ((gs - 1) * 30),
+    CAST(79.99 + (gs * 4.25) AS DECIMAL(10,2)),
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'activa'
+        WHEN 1 THEN 'vencida'
+        ELSE 'cancelada'
+    END,
+    'c' || lpad(gs::text, 2, '0'),
+    'fp' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
 
 -- =========================
 -- ARTISTAS
 -- =========================
-INSERT INTO artistas VALUES
-('a1', 'Actor famoso', 'p2'),
-('a2', 'Director reconocido', 'p3');
+INSERT INTO categoria_artista (id, nombre) VALUES
+('ca1', 'Actor'),
+('ca2', 'Director'),
+('ca3', 'Productor'),
+('ca4', 'Musico');
+
+INSERT INTO personas (id, nombre, apellido, genero, fecha_nacimiento, telefono, email, fk_pais)
+SELECT
+    'p' || lpad(gs::text, 2, '0'),
+    'Artista' || lpad(gs::text, 2, '0'),
+    'Apellido' || lpad(gs::text, 2, '0'),
+    CASE (gs - 21) % 3
+        WHEN 0 THEN 'M'
+        WHEN 1 THEN 'F'
+        ELSE 'O'
+    END,
+    DATE '1970-01-01' + ((gs - 21) * 220),
+    '7777' || lpad(gs::text, 4, '0'),
+    'artista' || lpad(gs::text, 2, '0') || '@tvz.net',
+    CASE (gs - 21) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END
+FROM generate_series(21, 40) AS gs;
+
+INSERT INTO artistas (id, biografia, fk_persona)
+SELECT
+    'a' || lpad((gs - 20)::text, 2, '0'),
+    'Biografia de Artista ' || (gs - 20),
+    'p' || lpad(gs::text, 2, '0')
+FROM generate_series(21, 40) AS gs;
+
+INSERT INTO artista_categoria (id, fk_artista, fk_categoria, fk_estilo)
+SELECT
+    'ac' || lpad(gs::text, 2, '0'),
+    'a' || lpad(gs::text, 2, '0'),
+    'ca1',
+    CASE (gs - 1) % 2
+        WHEN 0 THEN 'st4'
+        ELSE 'st5'
+    END
+FROM generate_series(1, 6) AS gs;
+
+INSERT INTO artista_categoria (id, fk_artista, fk_categoria, fk_estilo)
+SELECT
+    'ac' || lpad(gs::text, 2, '0'),
+    'a' || lpad(gs::text, 2, '0'),
+    'ca2',
+    NULL
+FROM generate_series(7, 11) AS gs;
+
+INSERT INTO artista_categoria (id, fk_artista, fk_categoria, fk_estilo)
+SELECT
+    'ac' || lpad(gs::text, 2, '0'),
+    'a' || lpad(gs::text, 2, '0'),
+    'ca3',
+    NULL
+FROM generate_series(12, 15) AS gs;
+
+INSERT INTO artista_categoria (id, fk_artista, fk_categoria, fk_estilo)
+SELECT
+    'ac' || lpad(gs::text, 2, '0'),
+    'a' || lpad(gs::text, 2, '0'),
+    'ca4',
+    CASE (gs - 16) % 5
+        WHEN 0 THEN 'st1'
+        WHEN 1 THEN 'st2'
+        WHEN 2 THEN 'st3'
+        WHEN 3 THEN 'st6'
+        ELSE 'st2'
+    END
+FROM generate_series(16, 20) AS gs;
+
+INSERT INTO sagas (id, nombre, descripcion, anio_inicio, fk_genero, fk_categoria, fk_artista) VALUES
+('s01', 'Saga Horizonte', 'Accion y aventura', 2018, 'g1', 'cat1', 'a12'),
+('s02', 'Saga Nocturna', 'Drama y misterio', 2020, 'g2', 'cat2', 'a13'),
+('s03', 'Saga Risas', 'Comedia familiar', 2021, 'g4', 'cat3', 'a14'),
+('s04', 'Saga Ritmo', 'Historias musicales', 2019, 'g3', 'cat5', 'a15'),
+('s05', 'Saga Arena', 'Accion extrema', 2022, 'g1', 'cat1', 'a11');
 
 -- =========================
--- ARTISTA CATEGORIA
+-- CONTENIDOS BASE
 -- =========================
-INSERT INTO artista_categoria VALUES
-('ac1', 'a1', 'ca1', 'est3'),
-('ac2', 'a2', 'ca2', NULL);
+INSERT INTO contenidos (id, titulo, anio, duracion, clasificacion, url_stream, tipo, fk_pais, fk_genero, fk_categoria)
+SELECT
+    'cont_m' || lpad(gs::text, 2, '0'),
+    'Pelicula ' || lpad(gs::text, 2, '0'),
+    2020 + ((gs - 1) % 5),
+    90 + gs,
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'PG'
+        WHEN 1 THEN 'PG-13'
+        ELSE 'R'
+    END,
+    'https://tvz.net/movies/' || lpad(gs::text, 2, '0'),
+    'pelicula',
+    CASE (gs - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END,
+    CASE (gs - 1) % 2
+        WHEN 0 THEN 'g1'
+        ELSE 'g4'
+    END,
+    CASE (gs - 1) % 2
+        WHEN 0 THEN 'cat1'
+        ELSE 'cat3'
+    END
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO contenidos (id, titulo, anio, duracion, clasificacion, url_stream, tipo, fk_pais, fk_genero, fk_categoria)
+SELECT
+    'cont_s' || lpad(gs::text, 2, '0'),
+    'Serie ' || lpad(gs::text, 2, '0'),
+    2020 + (gs - 1),
+    45,
+    'TV-14',
+    'https://tvz.net/series/' || lpad(gs::text, 2, '0'),
+    'serie',
+    CASE (gs - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END,
+    'g2',
+    'cat2'
+FROM generate_series(1, 5) AS gs;
+
+INSERT INTO contenidos (id, titulo, anio, duracion, clasificacion, url_stream, tipo, fk_pais, fk_genero, fk_categoria)
+SELECT
+    'cont_c' || lpad(gs::text, 2, '0'),
+    'Cancion ' || lpad(gs::text, 2, '0'),
+    2019 + ((gs - 1) % 6),
+    3 + ((gs - 1) % 3),
+    'G',
+    'https://tvz.net/music/' || lpad(gs::text, 2, '0'),
+    'cancion',
+    CASE (gs - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END,
+    'g3',
+    'cat5'
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO contenidos (id, titulo, anio, duracion, clasificacion, url_stream, tipo, fk_pais, fk_genero, fk_categoria)
+SELECT
+    'cont_vm' || lpad(gs::text, 2, '0'),
+    'Video Musical ' || lpad(gs::text, 2, '0'),
+    2020 + ((gs - 1) % 5),
+    4,
+    'G',
+    'https://tvz.net/videos/' || lpad(gs::text, 2, '0'),
+    'video_musical',
+    CASE (gs - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END,
+    'g3',
+    'cat5'
+FROM generate_series(1, 20) AS gs;
+
+WITH episodios_generados AS (
+    SELECT
+        gs,
+        ((gs - 1) / 5) + 1 AS serie_num,
+        ((gs - 1) % 5) + 1 AS episodio_num
+    FROM generate_series(1, 25) AS gs
+)
+INSERT INTO contenidos (id, titulo, anio, duracion, clasificacion, url_stream, tipo, fk_pais, fk_genero, fk_categoria)
+SELECT
+    'cont_e' || lpad(gs::text, 2, '0'),
+    'Serie ' || lpad(serie_num::text, 2, '0') || ' Episodio ' || lpad(episodio_num::text, 2, '0'),
+    2020 + serie_num,
+    42 + episodio_num,
+    'TV-14',
+    'https://tvz.net/episodes/' || lpad(gs::text, 2, '0'),
+    'episodio',
+    CASE (serie_num - 1) % 6
+        WHEN 0 THEN 'cr'
+        WHEN 1 THEN 'us'
+        WHEN 2 THEN 'mx'
+        WHEN 3 THEN 'es'
+        WHEN 4 THEN 'ar'
+        ELSE 'br'
+    END,
+    'g2',
+    'cat2'
+FROM episodios_generados;
 
 -- =========================
--- CONTENIDOS
+-- PELICULAS Y SERIES
 -- =========================
-INSERT INTO contenidos VALUES
-('cont1', 'Pelicula Accion 1', 2023, 120, 'PG-13', 'url1', 'pelicula', 'us', 'gen1', 'cat1'),
-('cont2', 'Serie Drama 1', 2022, 45, 'PG', 'url2', 'serie', 'mx', 'gen2', 'cat2'),
-('cont3', 'Cancion Pop 1', 2024, 3, 'G', 'url3', 'cancion', 'us', 'gen3', 'cat3');
+INSERT INTO peliculas (id, estudio, numero_en_saga, fk_contenido, fk_saga)
+SELECT
+    'pel' || lpad(gs::text, 2, '0'),
+    'Studio ' || (((gs - 1) % 4) + 1),
+    ((gs - 1) % 4) + 1,
+    'cont_m' || lpad(gs::text, 2, '0'),
+    's' || lpad((((gs - 1) / 4) + 1)::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO peliculas_artistas (id, rol, nombre_personaje, fk_pelicula, fk_artista)
+SELECT
+    'pa' || lpad(gs::text, 2, '0') || 'a',
+    'Actor',
+    'Personaje ' || lpad(gs::text, 2, '0'),
+    'pel' || lpad(gs::text, 2, '0'),
+    'a' || lpad((((gs - 1) % 6) + 1)::text, 2, '0')
+FROM generate_series(1, 20) AS gs
+UNION ALL
+SELECT
+    'pa' || lpad(gs::text, 2, '0') || 'd',
+    'Director',
+    NULL,
+    'pel' || lpad(gs::text, 2, '0'),
+    'a' || lpad((((gs - 1) % 5) + 7)::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO series (id, estudio, fk_contenido, fk_saga)
+SELECT
+    'ser' || lpad(gs::text, 2, '0'),
+    'Studio Serie ' || lpad(gs::text, 2, '0'),
+    'cont_s' || lpad(gs::text, 2, '0'),
+    's' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 5) AS gs;
+
+INSERT INTO series_artistas (id, rol, fk_serie, fk_artista)
+SELECT
+    'sa' || lpad(gs::text, 2, '0') || 'a',
+    'Actor',
+    'ser' || lpad(gs::text, 2, '0'),
+    'a' || lpad((((gs - 1) % 6) + 1)::text, 2, '0')
+FROM generate_series(1, 5) AS gs
+UNION ALL
+SELECT
+    'sa' || lpad(gs::text, 2, '0') || 'd',
+    'Director',
+    'ser' || lpad(gs::text, 2, '0'),
+    'a' || lpad((((gs - 1) % 5) + 7)::text, 2, '0')
+FROM generate_series(1, 5) AS gs;
+
+INSERT INTO temporadas (id, numero_temporada, anio, fk_serie)
+SELECT
+    'tem' || lpad(gs::text, 2, '0'),
+    1,
+    2020 + gs,
+    'ser' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 5) AS gs;
+
+WITH episodios_generados AS (
+    SELECT
+        gs,
+        ((gs - 1) / 5) + 1 AS serie_num,
+        ((gs - 1) % 5) + 1 AS episodio_num
+    FROM generate_series(1, 25) AS gs
+)
+INSERT INTO episodios (id, numero_episodio, titulo, duracion, fk_temporada, fk_contenido)
+SELECT
+    'epi' || lpad(gs::text, 2, '0'),
+    episodio_num,
+    'Serie ' || lpad(serie_num::text, 2, '0') || ' Episodio ' || lpad(episodio_num::text, 2, '0'),
+    42 + episodio_num,
+    'tem' || lpad(serie_num::text, 2, '0'),
+    'cont_e' || lpad(gs::text, 2, '0')
+FROM episodios_generados;
 
 -- =========================
--- SAGAS
+-- MUSICA
 -- =========================
-INSERT INTO sagas VALUES
-('s1', 'Saga Accion', 'Explosiones', 2020, 'gen1', 'cat1');
+INSERT INTO canciones (id, lirica, compositores, fk_contenido)
+SELECT
+    'can' || lpad(gs::text, 2, '0'),
+    'Letra de la cancion ' || lpad(gs::text, 2, '0'),
+    'Compositor ' || lpad(gs::text, 2, '0'),
+    'cont_c' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO videos_musicales (id, fk_contenido, fk_cancion)
+SELECT
+    'vm' || lpad(gs::text, 2, '0'),
+    'cont_vm' || lpad(gs::text, 2, '0'),
+    'can' || lpad(gs::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
+
+INSERT INTO canciones_artistas (id, rol, fk_cancion, fk_artista)
+SELECT
+    'caa' || lpad(gs::text, 2, '0'),
+    'Intérprete',
+    'can' || lpad(gs::text, 2, '0'),
+    'a' || lpad((((gs - 1) % 5) + 16)::text, 2, '0')
+FROM generate_series(1, 20) AS gs;
 
 -- =========================
--- PELICULAS
+-- ACTIVIDAD
 -- =========================
-INSERT INTO peliculas VALUES
-('pel1', 'Marvel', 1, 'cont1', 's1');
+INSERT INTO reproducciones (id, fecha_inicio, estado_actual, cantidad_veces, fk_cliente, fk_contenido)
+SELECT
+    'r' || lpad(gs::text, 2, '0'),
+    TIMESTAMP '2025-01-01 10:00:00' + ((gs - 1) * INTERVAL '2 hours'),
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'completado'
+        WHEN 1 THEN 'en_progreso'
+        ELSE 'pausado'
+    END,
+    1 + ((gs - 1) % 4),
+    'c' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 5
+        WHEN 0 THEN 'cont_m' || lpad(gs::text, 2, '0')
+        WHEN 1 THEN 'cont_s' || lpad((((gs - 1) % 5) + 1)::text, 2, '0')
+        WHEN 2 THEN 'cont_c' || lpad(gs::text, 2, '0')
+        WHEN 3 THEN 'cont_vm' || lpad(gs::text, 2, '0')
+        ELSE 'cont_e' || lpad(gs::text, 2, '0')
+    END
+FROM generate_series(1, 20) AS gs;
 
--- =========================
--- PELICULAS ARTISTAS
--- =========================
-INSERT INTO peliculas_artistas VALUES
-('pa1', 'Actor', 'Heroe', 'pel1', 'a1'),
-('pa2', 'Director', NULL, 'pel1', 'a2');
+INSERT INTO descargas (id, fecha_inicio, estado_actual, cantidad_veces, fk_cliente, fk_contenido, fk_formato)
+SELECT
+    'd' || lpad(gs::text, 2, '0'),
+    TIMESTAMP '2025-02-01 11:00:00' + ((gs - 1) * INTERVAL '3 hours'),
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'completado'
+        WHEN 1 THEN 'pendiente'
+        ELSE 'fallido'
+    END,
+    1 + ((gs - 1) % 3),
+    'c' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 5
+        WHEN 0 THEN 'cont_m' || lpad(gs::text, 2, '0')
+        WHEN 1 THEN 'cont_s' || lpad((((gs - 1) % 5) + 1)::text, 2, '0')
+        WHEN 2 THEN 'cont_c' || lpad(gs::text, 2, '0')
+        WHEN 3 THEN 'cont_vm' || lpad(gs::text, 2, '0')
+        ELSE 'cont_e' || lpad(gs::text, 2, '0')
+    END,
+    CASE (gs - 1) % 3
+        WHEN 0 THEN 'f1'
+        WHEN 1 THEN 'f2'
+        ELSE 'f3'
+    END
+FROM generate_series(1, 20) AS gs;
 
--- =========================
--- SERIES
--- =========================
-INSERT INTO series VALUES
-('ser1', 'Netflix', 'cont2', NULL);
-
--- =========================
--- SERIES ARTISTAS
--- =========================
-INSERT INTO series_artistas VALUES
-('sa1', 'Actor', 'ser1', 'a1');
-
--- =========================
--- TEMPORADAS
--- =========================
-INSERT INTO temporadas VALUES
-('t1', 1, 2022, 'ser1');
-
--- =========================
--- EPISODIOS
--- =========================
-INSERT INTO episodios VALUES
-('e1', 1, 'Episodio 1', 45, 't1', 'cont2');
-
--- =========================
--- CANCIONES
--- =========================
-INSERT INTO canciones VALUES
-('can1', 'Letra...', 'Autor X', 'cont3');
-
--- =========================
--- VIDEOS MUSICALES
--- =========================
-INSERT INTO videos_musicales VALUES
-('vm1', 'cont3', 'can1');
-
--- =========================
--- CANCIONES ARTISTAS
--- =========================
-INSERT INTO canciones_artistas VALUES
-('caa1', 'Interprete', 'can1', 'a1');
-
--- =========================
--- REPRODUCCIONES
--- =========================
-INSERT INTO reproducciones VALUES
-('r1', '2025-01-01 10:00:00', 'completado', 1, 'c1', 'cont1');
-
--- =========================
--- DESCARGAS
--- =========================
-INSERT INTO descargas VALUES
-('d1', '2025-01-01 11:00:00', 'completado', 1, 'c1', 'cont1', 'f1');
-
--- =========================
--- PREFERENCIAS
--- =========================
-INSERT INTO preferencias VALUES
-('pr1', '2025-01-02', 'c1', 'cont1');
+INSERT INTO preferencias (id, fecha_agregado, fk_cliente, fk_contenido)
+SELECT
+    'pr' || lpad(gs::text, 2, '0'),
+    DATE '2025-03-01' + ((gs - 1) * 2),
+    'c' || lpad(gs::text, 2, '0'),
+    CASE (gs - 1) % 4
+        WHEN 0 THEN 'cont_m' || lpad(gs::text, 2, '0')
+        WHEN 1 THEN 'cont_s' || lpad((((gs - 1) % 5) + 1)::text, 2, '0')
+        WHEN 2 THEN 'cont_c' || lpad(gs::text, 2, '0')
+        ELSE 'cont_vm' || lpad(gs::text, 2, '0')
+    END
+FROM generate_series(1, 20) AS gs;
