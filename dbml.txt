@@ -1,0 +1,346 @@
+// table personas{
+//   id varchar [unique, pk]
+//   nombre varchar
+//   apellido varchar
+//   genero bool
+//   fk_paises varchar [ref: > paises.id]
+// }
+
+// table paises{
+//   id varchar [unique, pk]
+// }
+
+// table artistas{
+//   id varchar [unique, pk]
+//   fk_persona varchar [ref: - personas.id]
+// }
+
+// table canciones_artistas{
+//   id varchar [unique, pk]
+//   fk_artistas varchar [ref: > artistas.id]
+//   fk_canciones varchar [ref: > canciones.id]
+// }
+
+// // -- Tabla intermedia
+// table artista_categoria_artista{
+//   id varchar [unique, pk]
+//   fk_artista_categoria varchar [ref: > categoria_artista.id]
+//   fk_artista varchar [ref: > artistas.id]
+// }
+
+// table categoria_artista{
+//   id varchar [unique, pk]
+//   categoria varchar
+// }
+
+// table clientes{
+//   id varchar [unique, pk]
+//   estado_pago bool
+//   fk_persona varchar [ref: - personas.id]
+// }
+
+// table formas_de_pago{
+//   id varchar [unique, pk]
+//   fk_formas_de_pago varchar 
+// }
+
+// table clientes_formas_de_pago{
+//   id varchar [unique, pk]
+//   fk_cliente varchar [ref:> clientes.id]
+//   fk_formas_de_pagos varchar [ref: > formas_de_pago.id]
+// }
+
+
+// table contenidos{
+//   id varchar [unique, pk]
+//   vistas int
+// }
+
+// table peliculas{
+//   id varchar [unique, pk]
+//   fk_saga varchar [ref: > saga.id]
+//   fk_contenido varchar [ref: > contenidos.id]
+// }
+
+// table peliculas_artistas{
+//   id varchar [unique, pk]
+//   fk_peliculas varchar [ref: > peliculas.id]
+//   fk_artistas varchar [ref: > artistas.id]
+// }
+
+// table series_artistas{
+//   id varchar [unique, pk]
+//   fk_peliculas varchar [ref: > series.id]
+//   fk_artistas varchar [ref: > artistas.id]
+// }
+
+// table saga{
+//   id varchar [unique, pk]
+//   nombre varchar
+//   descripcion varchar
+// }
+
+// table series{
+//   id varchar [unique, pk]
+  
+//   fk_contenido varchar [ref: > contenidos.id]
+// }
+
+// table temporada{
+//   id varchar [unique, pk]
+//   fk_temporada varchar [ref: > series.id]
+//   fk_saga varchar [ref: > saga.id]
+// }
+
+// table capitulo{
+//   id varchar [unique, pk]
+//   fk_series varchar [ref: > temporada.id]
+// }
+
+// table reproducciones{
+//   id varchar [unique, pk]
+//   fk_contenidos varchar [ref: > contenidos.id]
+// }
+
+// table descargas{
+//   id varchar [unique, pk]
+//   fk_contenidos varchar [ref: > contenidos.id]
+// }
+
+// table canciones{
+//   id varchar [unique, pk]
+//   fk_contenido varchar [ref: > contenidos.id]
+// }
+
+// table preferencia{
+//   id varchar [unique, pk]
+//   fk_contenidos varchar [ref: > contenidos.id]
+//   fk_cliente varchar [ref: > clientes.id]
+// }
+
+table paises {
+  id varchar [pk]
+  nombre varchar [not null]
+  codigo_iso varchar
+}
+
+table estilos {
+  id varchar [pk]
+  nombre varchar [not null]   // Rock, Pop, Drama, Comedia...
+  tipo varchar [not null]     // 'musica' | 'actuacion' | 'general'
+}
+
+table generos_contenido {
+  id varchar [pk]
+  nombre varchar [not null]
+  tipo varchar [not null]     // 'pelicula' | 'serie' | 'musica' | 'general'
+}
+
+table categorias {
+  id varchar [pk]
+  nombre varchar [not null]   // Terror, Acción, Documental...
+}
+
+table formatos {
+  id varchar [pk]
+  nombre varchar [not null]   // 'tvz' | 'mp4' | 'hd' | 'mobile'
+  dispositivo varchar          // 'smart_tv' | 'pc' | 'tablet' | 'movil'
+}
+
+// ── PERSONAS ─────────────────────────────────────────────
+
+table personas {
+  id varchar [pk]
+  nombre varchar [not null]
+  apellido varchar [not null]
+  genero bool               // 'M' | 'F' | 'Otro'
+  fecha_nacimiento date
+  telefono varchar
+  email varchar [unique]
+  fk_pais varchar [ref: > paises.id]
+}
+
+// ── CLIENTES ─────────────────────────────────────────────
+
+table clientes {
+  id varchar [pk]
+  clave_acceso varchar [not null]
+  direccion varchar
+  profesion varchar
+  fecha_inclusion date
+  fk_persona varchar [ref: - personas.id]
+}
+
+table tipos_pago {
+  id varchar [pk]
+  nombre varchar    // 'Tarjeta Crédito' | 'Tarjeta Débito' | 'Bitcoin'
+}
+
+table formas_de_pago {
+  id varchar [pk]
+  numero_cuenta varchar
+  titular varchar
+  fecha_vencimiento date      // null para bitcoin
+  direccion_wallet varchar    // solo para bitcoin
+  fk_tipo_pago varchar [ref: > tipos_pago.id]
+  fk_cliente varchar [ref: > clientes.id]
+}
+
+table membresias {
+  id varchar [pk]
+  fecha_inicio date [not null]
+  fecha_fin date [not null]
+  monto_pagado decimal [not null]
+  estado varchar [not null]   // 'activa' | 'vencida' | 'cancelada'
+  fk_cliente varchar [ref: > clientes.id]
+  fk_forma_pago varchar [ref: > formas_de_pago.id]
+}
+
+// ── ARTISTAS ─────────────────────────────────────────────
+
+table categoria_artista {
+  id varchar [pk]
+  nombre varchar    // 'Músico' | 'Actor' | 'Director' | 'Productor'
+}
+
+table artistas {
+  id varchar [pk]
+  biografia text
+  fk_persona varchar [ref: - personas.id]
+}
+
+// Tabla intermedia: un artista puede tener múltiples categorías y estilos
+table artista_categoria {
+  id varchar [pk]
+  fk_artista varchar [ref: > artistas.id]
+  fk_categoria varchar [ref: > categoria_artista.id]
+  fk_estilo varchar [ref: > estilos.id]  // nullable — no todos tienen estilo
+}
+
+// ── CONTENIDO BASE ───────────────────────────────────────
+
+table contenidos {
+  id varchar [pk]
+  titulo varchar [not null]
+  anio int
+  duracion int                // en minutos
+  clasificacion varchar       // G | PG | PG-13 | R...
+  url_stream varchar
+  tipo varchar [not null]     // 'pelicula' | 'serie' | 'cancion' | 'episodio' | 'video_musical'
+  fk_pais varchar [ref: > paises.id]
+  fk_genero varchar [ref: > generos_contenido.id]
+  fk_categoria varchar [ref: > categorias.id]
+}
+
+// ── SAGAS ────────────────────────────────────────────────
+
+table sagas {
+  id varchar [pk]
+  nombre varchar [not null]
+  descripcion text
+  anio_inicio int
+  fk_genero varchar [ref: > generos_contenido.id]
+  fk_categoria varchar [ref: > categorias.id]
+}
+
+// ── PELÍCULAS ────────────────────────────────────────────
+
+table peliculas {
+  id varchar [pk]
+  estudio varchar
+  numero_en_saga int          // posición en la saga (nullable)
+  fk_contenido varchar [ref: - contenidos.id]
+  fk_saga varchar [ref: > sagas.id]   // nullable
+}
+
+table peliculas_artistas {
+  id varchar [pk]
+  rol varchar [not null]      // 'Actor' | 'Director' | 'Productor'
+  nombre_personaje varchar    // solo si rol = Actor
+  fk_pelicula varchar [ref: > peliculas.id]
+  fk_artista varchar [ref: > artistas.id]
+}
+
+// ── SERIES ───────────────────────────────────────────────
+
+table series {
+  id varchar [pk]
+  estudio varchar
+  fk_contenido varchar [ref: - contenidos.id]
+  fk_saga varchar [ref: > sagas.id]   // nullable — sagas aplican también a series
+}
+
+table series_artistas {
+  id varchar [pk]
+  rol varchar [not null]      // 'Actor' | 'Director' | 'Productor'
+  fk_serie varchar [ref: > series.id]
+  fk_artista varchar [ref: > artistas.id]
+}
+
+table temporadas {
+  id varchar [pk]
+  numero_temporada int [not null]
+  anio int
+  fk_serie varchar [ref: > series.id]
+}
+
+// Cada episodio ES un contenido reproducible/descargable individualmente
+table episodios {
+  id varchar [pk]
+  numero_episodio int [not null]
+  titulo varchar
+  duracion int
+  fk_temporada varchar [ref: > temporadas.id]
+  fk_contenido varchar [ref: - contenidos.id]
+}
+
+// ── MÚSICA ───────────────────────────────────────────────
+
+table canciones {
+  id varchar [pk]
+  lirica text
+  compositores varchar
+  fk_contenido varchar [ref: - contenidos.id]
+}
+
+// Un video musical ES un contenido, y puede estar ligado a una canción
+table videos_musicales {
+  id varchar [pk]
+  fk_contenido varchar [ref: - contenidos.id]
+  fk_cancion varchar [ref: > canciones.id]   // nullable
+}
+
+table canciones_artistas {
+  id varchar [pk]
+  rol varchar    // 'Intérprete' | 'Compositor' | 'Productor musical'
+  fk_cancion varchar [ref: > canciones.id]
+  fk_artista varchar [ref: > artistas.id]
+}
+
+// ── ACTIVIDAD ────────────────────────────────────────────
+
+table reproducciones {
+  id varchar [pk]
+  fecha_inicio datetime [not null]
+  estado_actual varchar    // 'en_progreso' | 'completado' | 'pausado'
+  cantidad_veces int [default: 1]
+  fk_cliente varchar [ref: > clientes.id]
+  fk_contenido varchar [ref: > contenidos.id]
+}
+
+table descargas {
+  id varchar [pk]
+  fecha_inicio datetime [not null]
+  estado_actual varchar    // 'pendiente' | 'completado' | 'fallido'
+  cantidad_veces int [default: 1]
+  fk_cliente varchar [ref: > clientes.id]
+  fk_contenido varchar [ref: > contenidos.id]
+  fk_formato varchar [ref: > formatos.id]
+}
+
+table preferencias {
+  id varchar [pk]
+  fecha_agregado date
+  fk_cliente varchar [ref: > clientes.id]
+  fk_contenido varchar [ref: > contenidos.id]
+}
