@@ -99,7 +99,7 @@ FROM descargas d
 JOIN contenidos c ON d.fk_contenido = c.id
 GROUP BY c.id, c.titulo, c.tipo
 ORDER BY total_descargas DESC
-LIMIT 10;
+FETCH FIRST 10 ROWS ONLY;
 
 -- 6. Lista de contenidos mas vistos por los clientes
 SELECT
@@ -110,4 +110,4 @@ FROM reproducciones r
 JOIN contenidos c ON r.fk_contenido = c.id
 GROUP BY c.id, c.titulo, c.tipo
 ORDER BY total_reproducciones DESC
-LIMIT 10;
+FETCH FIRST 10 ROWS ONLY;

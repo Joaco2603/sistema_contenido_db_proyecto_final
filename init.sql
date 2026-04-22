@@ -89,7 +89,7 @@ CREATE TABLE categoria_artista (
 
 CREATE TABLE artistas (
     id         VARCHAR(20) PRIMARY KEY,
-    biografia  TEXT,
+    biografia  CLOB,
     fk_persona VARCHAR(20) UNIQUE NOT NULL REFERENCES personas(id)
     -- UNIQUE: una persona solo puede ser un artista
 );
@@ -106,7 +106,7 @@ CREATE TABLE artista_categoria (
 CREATE TABLE sagas (
     id           VARCHAR(20)  PRIMARY KEY,
     nombre       VARCHAR(150) NOT NULL,
-    descripcion  TEXT,
+    descripcion  CLOB,
     anio_inicio  INT,
     fk_genero    VARCHAR(10)  REFERENCES generos_contenido(id),
     fk_categoria VARCHAR(10)  REFERENCES categorias(id),
@@ -188,7 +188,7 @@ CREATE TABLE episodios (
 -- 7. Música
 CREATE TABLE canciones (
     id           VARCHAR(20) PRIMARY KEY,
-    lirica       TEXT,
+    lirica       CLOB,
     compositores VARCHAR(255),
     fk_contenido VARCHAR(20) UNIQUE NOT NULL REFERENCES contenidos(id)
     -- UNIQUE: un contenido solo puede ser una canción
